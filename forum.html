@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#B80000">
+<title>ถาม-ตอบ กับอาจารย์ที่ปรึกษา</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"
+  onerror="showFatal('โหลด LIFF SDK จาก static.line-scdn.net ไม่สำเร็จ (เน็ตช้า/ถูกบล็อก) กรุณาลองใหม่')"></script>
+<style>
+  :root{
+    --primary:#B80000;--primary-dark:#8a0000;--primary-light:#fdeceb;
+    --bg:#faf6f5;--surface:#ffffff;--text:#26191a;--muted:#8c7876;--border:#efe1de;
+    --success:#1f9254;--success-bg:#e8f7ee;--danger:#c0392b;--danger-bg:#fdecea;
+    --radius-lg:24px;--radius-md:15px;--radius-pill:999px;
+  }
+  *{box-sizing:border-box;min-width:0;}
+  html,body{overflow-x:hidden;width:100%;}
+  body{margin:0;font-family:'Sarabun','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);}
+  h1,h2,.brand-font{font-family:'Kanit',sans-serif;}
+  .hidden{display:none !important;}
+
+  .header{
+    background:linear-gradient(155deg,var(--primary) 0%,var(--primary-dark) 100%);
+    color:#fff;padding:calc(env(safe-area-inset-top,0px) + 22px) 20px 28px;text-align:center;
+  }
+  .header h1{margin:0;font-size:18px;font-weight:700;}
+  .header .role-badge{
+    display:inline-block;margin-top:8px;font-size:11.5px;font-weight:600;
+    background:rgba(255,255,255,.18);padding:5px 14px;border-radius:var(--radius-pill);
+  }
+
+  .page{max-width:560px;margin:0 auto;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 32px);}
+
+  .loading{text-align:center;padding:70px 24px 40px;color:var(--muted);font-size:14px;}
+  .spinner{
+    width:34px;height:34px;margin:0 auto 18px;border:3px solid var(--primary-light);
+    border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading #loadingText{font-weight:600;color:var(--text);font-family:'Kanit',sans-serif;}
+  .loading .step{margin-top:8px;font-size:12px;color:#b39d9a;}
+  .loading .diag{
+    margin-top:18px;text-align:left;background:var(--danger-bg);color:var(--danger);
+    padding:14px;border-radius:var(--radius-md);font-size:12px;line-height:1.7;
+    white-space:pre-wrap;word-break:break-word;display:none;
+  }
+  .loading .retry{
+    margin-top:16px;display:inline-block;padding:10px 22px;border-radius:var(--radius-pill);
+    background:var(--primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+    display:none;font-family:'Kanit',sans-serif;
+  }
+
+  .card{
+    background:var(--surface);border-radius:var(--radius-lg);
+    box-shadow:0 10px 28px -14px rgba(184,0,0,.18), 0 2px 8px rgba(0,0,0,.04);
+    padding:20px;margin-top:18px;
+  }
+  .notice{text-align:center;padding:30px 10px;color:var(--muted);font-size:13.5px;line-height:1.8;}
+
+  .new-thread-btn{
+    width:100%;padding:15px;border:none;border-radius:var(--radius-pill);
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:'Kanit',sans-serif;
+    box-shadow:0 8px 20px -6px rgba(184,0,0,.45);margin-top:16px;
+  }
+
+  .thread-list{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+  .thread-card{
+    background:var(--surface);border-radius:var(--radius-lg);
+    box-shadow:0 8px 22px -14px rgba(184,0,0,.16), 0 2px 8px rgba(0,0,0,.04);
+    padding:16px 18px;cursor:pointer;
+  }
+  .thread-title{font-family:'Kanit',sans-serif;font-weight:700;font-size:15px;}
+  .thread-snippet{font-size:13px;color:var(--muted);margin-top:4px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .thread-meta{font-size:11.5px;color:#b39d9a;margin-top:8px;}
+
+  .back-link{
+    display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;
+    color:var(--primary-dark);cursor:pointer;margin-bottom:14px;
+  }
+
+  label.field-label{display:block;font-size:13.5px;font-weight:600;margin:14px 0 7px;}
+  label.field-label:first-of-type{margin-top:0;}
+  input[type=text], textarea{
+    width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-md);
+    font-size:14.5px;background:#fcfafa;font-family:inherit;color:var(--text);
+  }
+  textarea{min-height:110px;resize:vertical;line-height:1.6;}
+  input:focus, textarea:focus{
+    outline:none;border-color:var(--primary);background:#fff;
+    box-shadow:0 0 0 4px rgba(184,0,0,.10);
+  }
+  .btn-row{display:flex;gap:10px;margin-top:16px;}
+  .btn{
+    flex:1;padding:13px;border:none;border-radius:var(--radius-pill);font-size:14px;
+    font-weight:700;cursor:pointer;font-family:'Kanit',sans-serif;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;}
+  .btn-secondary{background:#f1eceb;color:var(--muted);}
+
+  .thread-detail-title{font-family:'Kanit',sans-serif;font-weight:700;font-size:17px;}
+  .thread-detail-date{font-size:11.5px;color:var(--muted);margin:6px 0 14px;}
+  .thread-detail-msg{font-size:14.5px;line-height:1.75;white-space:pre-wrap;}
+  .owner-actions{display:flex;gap:8px;margin-top:14px;}
+  .btn-xs{
+    padding:8px 15px;border-radius:var(--radius-pill);font-size:12.5px;font-weight:700;
+    cursor:pointer;font-family:'Kanit',sans-serif;border:none;
+  }
+  .btn-xs-edit{background:var(--primary-light);color:var(--primary-dark);}
+  .btn-xs-delete{background:var(--danger-bg);color:var(--danger);}
+
+  .reply-section{margin-top:22px;}
+  .reply-section h3{font-size:14px;margin:0 0 12px;font-family:'Kanit',sans-serif;color:var(--primary-dark);}
+  .reply-card{
+    background:#fcfafa;border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:14px 16px;margin-bottom:10px;
+  }
+  .reply-author{font-size:12.5px;font-weight:700;color:var(--primary-dark);}
+  .reply-date{font-size:11px;color:var(--muted);margin-left:8px;}
+  .reply-msg{font-size:13.5px;line-height:1.7;margin-top:6px;white-space:pre-wrap;}
+  .reply-actions{display:flex;gap:8px;margin-top:8px;}
+  .empty-reply{font-size:13px;color:var(--muted);text-align:center;padding:16px 0;}
+
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:var(--text);color:#fff;padding:12px 20px;border-radius:var(--radius-pill);
+    font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:1100;opacity:0;
+    transition:opacity .2s ease, transform .2s ease;max-width:88vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>ถาม-ตอบ กับอาจารย์ที่ปรึกษา</h1>
+    <div class="role-badge" id="roleBadge">กำลังตรวจสอบสิทธิ์...</div>
+  </div>
+
+  <div class="page">
+    <div id="loadingBox" class="loading">
+      <div class="spinner"></div>
+      <div id="loadingText">กำลังเชื่อมต่อกับ LINE...</div>
+      <div class="step" id="stepText">กำลังโหลด LIFF SDK...</div>
+      <div class="diag" id="diagBox"></div>
+      <div class="retry" id="retryBtn" onclick="location.reload()">ลองใหม่อีกครั้ง</div>
+    </div>
+
+    <div id="app" class="hidden">
+
+      <!-- มุมมองรายการกระทู้ -->
+      <div id="listView">
+        <div id="noAdvisorNotice" class="card notice hidden">
+          คุณยังไม่ได้ถูกกำหนดอาจารย์ที่ปรึกษา<br>กรุณาติดต่อเจ้าหน้าที่เพื่อกำหนดก่อนตั้งกระทู้
+        </div>
+        <button id="newThreadBtn" class="new-thread-btn hidden" onclick="showFormView()">➕ ตั้งกระทู้ใหม่</button>
+        <div id="threadListEmpty" class="card notice hidden">ยังไม่มีกระทู้</div>
+        <div id="threadList" class="thread-list"></div>
+      </div>
+
+      <!-- มุมมองฟอร์มตั้ง/แก้ไขกระทู้ (นักศึกษาเท่านั้น) -->
+      <div id="formView" class="hidden">
+        <div class="back-link" onclick="showListView()">← กลับ</div>
+        <div class="card">
+          <label class="field-label">หัวข้อคำถาม</label>
+          <input type="text" id="threadTitleInput" maxlength="150" placeholder="เช่น สอบถามเรื่องการลงทะเบียนเรียน">
+          <label class="field-label">รายละเอียด</label>
+          <textarea id="threadMessageInput" maxlength="2000" placeholder="พิมพ์คำถามของคุณ..."></textarea>
+          <div class="btn-row">
+            <button class="btn btn-secondary" onclick="showListView()">ยกเลิก</button>
+            <button class="btn btn-primary" id="threadSubmitBtn" onclick="submitThread()">บันทึก</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- มุมมองรายละเอียดกระทู้ + คำตอบ -->
+      <div id="detailView" class="hidden">
+        <div class="back-link" onclick="showListView()">← กลับ</div>
+        <div class="card">
+          <div class="thread-detail-title" id="detailTitle"></div>
+          <div class="thread-detail-date" id="detailDate"></div>
+          <div class="thread-detail-msg" id="detailMessage"></div>
+          <div class="owner-actions hidden" id="threadOwnerActions">
+            <button class="btn-xs btn-xs-edit" onclick="editCurrentThread()">✏️ แก้ไขกระทู้</button>
+            <button class="btn-xs btn-xs-delete" onclick="deleteCurrentThread()">🗑️ ลบกระทู้</button>
+          </div>
+
+          <div class="reply-section">
+            <h3>คำตอบจากอาจารย์ที่ปรึกษา</h3>
+            <div id="replyList"></div>
+            <div id="replyEmpty" class="empty-reply hidden">ยังไม่มีคำตอบ</div>
+          </div>
+
+          <div id="replyFormBox" class="hidden">
+            <label class="field-label">เขียนคำตอบ</label>
+            <textarea id="replyMessageInput" maxlength="2000" placeholder="พิมพ์คำตอบ..."></textarea>
+            <div class="btn-row">
+              <button class="btn btn-secondary" id="replyCancelBtn" onclick="cancelReplyForm()">ยกเลิก</button>
+              <button class="btn btn-primary" onclick="submitReply()">ส่งคำตอบ</button>
+            </div>
+          </div>
+          <button id="replyAddBtn" class="new-thread-btn hidden" onclick="openReplyForm()">➕ ตอบกระทู้นี้</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  // ==== แก้ 2 ค่านี้ให้ตรงกับของจริงก่อนใช้งาน (ต้องสร้าง LIFF App แยกอีกตัวสำหรับหน้านี้) ====
+  const LIFF_ID = "YOUR_FORUM_LIFF_ID_HERE";
+  const API_URL = "YOUR_APPS_SCRIPT_EXEC_URL_HERE";
+  // ================================================
+
+  let userProfile = null;
+  let myRole = '';
+  let myFullName = '';
+  let myAdvisorLineUserId = '';
+  let myAdvisorName = '';
+  let allThreads = [];
+  let currentThread = null;
+  let currentReplies = [];
+  let editingThreadId = null;
+  let editingReplyId = null;
+  let resolved = false;
+
+  function setStep(text) { const el = document.getElementById('stepText'); if (el) el.innerText = text; }
+
+  function showFatal(text, diagInfo) {
+    document.getElementById('loadingText').innerText = 'เกิดปัญหาในการเชื่อมต่อ';
+    document.getElementById('stepText').innerText = text;
+    document.getElementById('retryBtn').style.display = 'inline-block';
+    if (diagInfo) {
+      const box = document.getElementById('diagBox');
+      box.style.display = 'block';
+      box.innerText = diagInfo;
+    }
+  }
+
+  window.onerror = function (msg, url, line, col) {
+    if (resolved) return;
+    showFatal('เกิดข้อผิดพลาดขณะรันสคริปต์', 'JS error: ' + msg + '\nที่บรรทัด: ' + line + ':' + col);
+  };
+
+  const stuckTimer = setTimeout(function () {
+    if (resolved) return;
+    showFatal('เชื่อมต่อ LINE นานเกินไป (เกิน 12 วินาที)',
+      'ตรวจสอบ LIFF_ID / Endpoint URL ของ LIFF App นี้ว่าตรงกับ URL ของหน้านี้หรือไม่');
+  }, 12000);
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.add('show');
+    clearTimeout(t._hideTimer);
+    t._hideTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function initLiff() {
+    if (typeof liff === 'undefined') {
+      showFatal('โหลด LIFF SDK ไม่สำเร็จ', 'ตัวแปร liff ไม่ถูกสร้าง');
+      return;
+    }
+    if (!LIFF_ID || LIFF_ID === 'YOUR_FORUM_LIFF_ID_HERE') {
+      showFatal('ยังไม่ได้ตั้งค่า LIFF_ID', 'แก้ตัวแปร LIFF_ID ในไฟล์นี้');
+      return;
+    }
+    setStep('กำลัง liff.init()...');
+    liff.init({ liffId: LIFF_ID })
+      .then(() => {
+        if (!liff.isLoggedIn()) { liff.login(); return null; }
+        setStep('กำลังดึงข้อมูลโปรไฟล์...');
+        return liff.getProfile();
+      })
+      .then(profile => {
+        if (!profile) return null;
+        userProfile = profile;
+        setStep('กำลังตรวจสอบสิทธิ์ผู้ใช้...');
+        return fetch(API_URL + '?action=whoami&lineUserId=' + encodeURIComponent(profile.userId))
+          .then(res => res.json());
+      })
+      .then(who => {
+        if (!userProfile) return;
+        resolved = true;
+        clearTimeout(stuckTimer);
+        document.getElementById('loadingBox').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        handleWhoAmI(who);
+      })
+      .catch(err => {
+        clearTimeout(stuckTimer);
+        showFatal('เชื่อมต่อ LINE ไม่สำเร็จ', err && err.message ? err.message : String(err));
+      });
+  }
+
+  function handleWhoAmI(who) {
+    if (!who || who.status !== 'success') {
+      document.getElementById('roleBadge').innerText = 'ยังไม่ได้ลงทะเบียน';
+      document.getElementById('listView').innerHTML =
+        '<div class="card notice">ไม่พบข้อมูลของคุณในระบบ กรุณาลงทะเบียนก่อนใช้งานฟีเจอร์นี้</div>';
+      return;
+    }
+    myRole = who.role;
+    myFullName = who.fullName;
+    myAdvisorLineUserId = who.advisorLineUserId;
+    myAdvisorName = who.advisorName;
+
+    if (myRole === 'นักศึกษา') {
+      document.getElementById('roleBadge').innerText = '🎓 ' + myFullName + ' (นักศึกษา)';
+      if (!myAdvisorLineUserId) {
+        document.getElementById('noAdvisorNotice').classList.remove('hidden');
+      } else {
+        document.getElementById('newThreadBtn').classList.remove('hidden');
+      }
+    } else if (myRole === 'อาจารย์') {
+      document.getElementById('roleBadge').innerText = '👨‍🏫 ' + myFullName + ' (อาจารย์ที่ปรึกษา)';
+    } else {
+      document.getElementById('roleBadge').innerText = myFullName;
+      document.getElementById('listView').innerHTML =
+        '<div class="card notice">ฟีเจอร์นี้เปิดให้เฉพาะนักศึกษาและอาจารย์ที่ปรึกษาเท่านั้น</div>';
+      return;
+    }
+    loadThreads();
+  }
+
+  function loadThreads() {
+    fetch(API_URL + '?action=myThreads&lineUserId=' + encodeURIComponent(userProfile.userId))
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'error') { showToast('❌ ' + res.message); return; }
+        allThreads = res.items;
+        renderThreadList();
+      })
+      .catch(err => showToast('❌ โหลดกระทู้ไม่สำเร็จ: ' + err.message));
+  }
+
+  function renderThreadList() {
+    const listEl = document.getElementById('threadList');
+    const emptyEl = document.getElementById('threadListEmpty');
+    if (allThreads.length === 0) {
+      emptyEl.classList.remove('hidden');
+      listEl.innerHTML = '';
+      return;
+    }
+    emptyEl.classList.add('hidden');
+    listEl.innerHTML = allThreads.map(t => {
+      const otherParty = myRole === 'นักศึกษา' ? t.advisorName : t.studentName;
+      return '<div class="thread-card" onclick="openThread(\'' + t.threadId + '\')">' +
+        '<div class="thread-title">' + escapeHtml(t.title) + '</div>' +
+        '<div class="thread-snippet">' + escapeHtml(t.message) + '</div>' +
+        '<div class="thread-meta">🗓️ ' + formatDate(t.updatedAt) + ' · กับ ' + escapeHtml(otherParty) + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.innerText = str || '';
+    return div.innerHTML;
+  }
+  function formatDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) +
+      ' ' + d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function showListView() {
+    document.getElementById('listView').classList.remove('hidden');
+    document.getElementById('formView').classList.add('hidden');
+    document.getElementById('detailView').classList.add('hidden');
+    editingThreadId = null;
+    loadThreads();
+  }
+
+  function showFormView() {
+    editingThreadId = null;
+    document.getElementById('threadTitleInput').value = '';
+    document.getElementById('threadMessageInput').value = '';
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('formView').classList.remove('hidden');
+  }
+
+  function submitThread() {
+    const title = document.getElementById('threadTitleInput').value.trim();
+    const message = document.getElementById('threadMessageInput').value.trim();
+    if (!title || !message) { showToast('กรุณากรอกหัวข้อและรายละเอียด'); return; }
+
+    const action = editingThreadId ? 'editThread' : 'createThread';
+    const body = { action: action, lineUserId: userProfile.userId, title: title, message: message };
+    if (editingThreadId) body.threadId = editingThreadId;
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'error') { showToast('❌ ' + res.message); return; }
+        showToast('✅ บันทึกกระทู้เรียบร้อย');
+        showListView();
+      })
+      .catch(err => showToast('❌ เกิดข้อผิดพลาด: ' + err.message));
+  }
+
+  function openThread(threadId) {
+    fetch(API_URL + '?action=threadDetail&threadId=' + encodeURIComponent(threadId) +
+      '&lineUserId=' + encodeURIComponent(userProfile.userId))
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'error') { showToast('❌ ' + res.message); return; }
+        currentThread = res.thread;
+        currentReplies = res.replies;
+        renderThreadDetail();
+        document.getElementById('listView').classList.add('hidden');
+        document.getElementById('detailView').classList.remove('hidden');
+      })
+      .catch(err => showToast('❌ โหลดกระทู้ไม่สำเร็จ: ' + err.message));
+  }
+
+  function renderThreadDetail() {
+    document.getElementById('detailTitle').innerText = currentThread.title;
+    document.getElementById('detailDate').innerText = '🗓️ ตั้งเมื่อ ' + formatDate(currentThread.createdAt) +
+      (currentThread.updatedAt !== currentThread.createdAt ? ' (แก้ไขล่าสุด ' + formatDate(currentThread.updatedAt) + ')' : '');
+    document.getElementById('detailMessage').innerText = currentThread.message;
+
+    const isOwner = myRole === 'นักศึกษา' && currentThread.studentLineUserId === userProfile.userId;
+    document.getElementById('threadOwnerActions').classList.toggle('hidden', !isOwner);
+
+    const replyListEl = document.getElementById('replyList');
+    const replyEmptyEl = document.getElementById('replyEmpty');
+    if (currentReplies.length === 0) {
+      replyEmptyEl.classList.remove('hidden');
+      replyListEl.innerHTML = '';
+    } else {
+      replyEmptyEl.classList.add('hidden');
+      replyListEl.innerHTML = currentReplies.map(r => {
+        const isAuthor = myRole === 'อาจารย์' && r.advisorLineUserId === userProfile.userId;
+        return '<div class="reply-card">' +
+          '<span class="reply-author">👨‍🏫 ' + escapeHtml(r.advisorName) + '</span>' +
+          '<span class="reply-date">' + formatDate(r.createdAt) + '</span>' +
+          '<div class="reply-msg">' + escapeHtml(r.message) + '</div>' +
+          (isAuthor ?
+            '<div class="reply-actions">' +
+              '<button class="btn-xs btn-xs-edit" onclick="editReplyPrompt(\'' + r.replyId + '\')">✏️ แก้ไข</button>' +
+              '<button class="btn-xs btn-xs-delete" onclick="deleteReplyConfirm(\'' + r.replyId + '\')">🗑️ ลบ</button>' +
+            '</div>' : '') +
+          '</div>';
+      }).join('');
+    }
+
+    const isAdvisorHere = myRole === 'อาจารย์' && currentThread.advisorLineUserId === userProfile.userId;
+    document.getElementById('replyAddBtn').classList.toggle('hidden', !isAdvisorHere);
+    document.getElementById('replyFormBox').classList.add('hidden');
+    editingReplyId = null;
+  }
+
+  function editCurrentThread() {
+    editingThreadId = currentThread.threadId;
+    document.getElementById('threadTitleInput').value = currentThread.title;
+    document.getElementById('threadMessageInput').value = currentThread.message;
+    document.getElementById('detailView').classList.add('hidden');
+    document.getElementById('formView').classList.remove('hidden');
+  }
+
+  function deleteCurrentThread() {
+    if (!confirm('ต้องการลบกระทู้นี้ใช่หรือไม่? คำตอบทั้งหมดจะถูกลบไปด้วย')) return;
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'deleteThread', lineUserId: userProfile.userId, threadId: currentThread.threadId })
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'error') { showToast('❌ ' + res.message); return; }
+        showToast('✅ ลบกระทู้เรียบร้อย');
+        showListView();
+      })
+      .catch(err => showToast('❌ เกิดข้อผิดพลาด: ' + err.message));
+  }
+
+  function openReplyForm() {
+    editingReplyId = null;
+    document.getElementById('replyMessageInput').value = '';
+    document.getElementById('replyFormBox').classList.remove('hidden');
+  }
+  function cancelReplyForm() {
+    editingReplyId = null;
+    document.getElementById('replyFormBox').classList.add('hidden');
+  }
+
+  function editReplyPrompt(replyId) {
+    const r = currentReplies.find(x => x.replyId === replyId);
+    editingReplyId = replyId;
+    document.getElementById('replyMessageInput').value = r.message;
+    document.getElementById('replyFormBox').classList.remove('hidden');
+  }
+
+  function submitReply() {
+    const message = document.getElementById('replyMessageInput').value.trim();
+    if (!message) { showToast('กรุณากรอกข้อความคำตอบ'); return; }
+
+    const action = editingReplyId ? 'editReply' : 'createReply';
+    const body = { action: action, lineUserId: userProfile.userId, message: message };
+    if (editingReplyId) body.replyId = editingReplyId; else body.threadId = currentThread.threadId;
+
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body)
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'error') { showToast('❌ ' + res.message); return; }
+        showToast('✅ บันทึกคำตอบเรียบร้อย');
+        openThread(currentThread.threadId);
+      })
+      .catch(err => showToast('❌ เกิดข้อผิดพลาด: ' + err.message));
+  }
+
+  function deleteReplyConfirm(replyId) {
+    if (!confirm('ต้องการลบคำตอบนี้ใช่หรือไม่?')) return;
+    fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'deleteReply', lineUserId: userProfile.userId, replyId: replyId })
+    })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === 'error') { showToast('❌ ' + res.message); return; }
+        showToast('✅ ลบคำตอบเรียบร้อย');
+        openThread(currentThread.threadId);
+      })
+      .catch(err => showToast('❌ เกิดข้อผิดพลาด: ' + err.message));
+  }
+
+  initLiff();
+</script>
+</body>
+</html>
