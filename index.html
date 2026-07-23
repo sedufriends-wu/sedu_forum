@@ -103,6 +103,17 @@
   .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;}
   .btn-secondary{background:#f1eceb;color:var(--muted);}
 
+  .btn[disabled]{opacity:.75;cursor:not-allowed;}
+  .save-icon{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:16px;height:16px;margin-right:7px;vertical-align:-3px;
+  }
+  .save-icon svg{width:16px;height:16px;animation:save-bounce 0.9s ease-in-out infinite;}
+  @keyframes save-bounce{
+    0%,100%{transform:translateY(-2px);opacity:.6;}
+    50%{transform:translateY(2px);opacity:1;}
+  }
+
   .thread-detail-title{font-family:'Kanit',sans-serif;font-weight:700;font-size:17px;}
   .thread-detail-date{font-size:11.5px;color:var(--muted);margin:6px 0 14px;}
   .thread-detail-msg{font-size:14.5px;line-height:1.75;white-space:pre-wrap;}
@@ -201,7 +212,7 @@
             <textarea id="replyMessageInput" maxlength="2000" placeholder="พิมพ์คำตอบ..."></textarea>
             <div class="btn-row">
               <button class="btn btn-secondary" id="replyCancelBtn" onclick="cancelReplyForm()">ยกเลิก</button>
-              <button class="btn btn-primary" onclick="submitReply()">ส่งคำตอบ</button>
+              <button class="btn btn-primary" id="replySubmitBtn" onclick="submitReply()">ส่งคำตอบ</button>
             </div>
           </div>
           <button id="replyAddBtn" class="new-thread-btn hidden" onclick="openReplyForm()">ตอบคำถาม</button>
@@ -261,6 +272,23 @@
     t.classList.add('show');
     clearTimeout(t._hideTimer);
     t._hideTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  const SAVE_ICON_SVG =
+    '<span class="save-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</svg></span>';
+
+  function setSaving(btnId, isSaving, savingText, normalText) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    if (isSaving) {
+      btn.disabled = true;
+      btn.innerHTML = SAVE_ICON_SVG + savingText;
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = normalText;
+    }
   }
 
   function initLiff() {
@@ -396,6 +424,8 @@
     const body = { action: action, lineUserId: userProfile.userId, title: title, message: message };
     if (editingThreadId) body.threadId = editingThreadId;
 
+    setSaving('threadSubmitBtn', true, 'กำลังบันทึก...', 'บันทึก');
+
     fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -403,11 +433,15 @@
     })
       .then(res => res.json())
       .then(res => {
+        setSaving('threadSubmitBtn', false, '', 'บันทึก');
         if (res.status === 'error') { showToast('❌ ' + res.message); return; }
         showToast('✅ บันทึกคำถามเรียบร้อย');
         showListView();
       })
-      .catch(err => showToast('❌ เกิดข้อผิดพลาด: ' + err.message));
+      .catch(err => {
+        setSaving('threadSubmitBtn', false, '', 'บันทึก');
+        showToast('❌ เกิดข้อผิดพลาด: ' + err.message);
+      });
   }
 
   function openThread(threadId) {
@@ -511,6 +545,8 @@
     const body = { action: action, lineUserId: userProfile.userId, message: message };
     if (editingReplyId) body.replyId = editingReplyId; else body.threadId = currentThread.threadId;
 
+    setSaving('replySubmitBtn', true, 'กำลังส่ง...', 'ส่งคำตอบ');
+
     fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -518,11 +554,15 @@
     })
       .then(res => res.json())
       .then(res => {
+        setSaving('replySubmitBtn', false, '', 'ส่งคำตอบ');
         if (res.status === 'error') { showToast('❌ ' + res.message); return; }
         showToast('✅ บันทึกคำตอบเรียบร้อย');
         openThread(currentThread.threadId);
       })
-      .catch(err => showToast('❌ เกิดข้อผิดพลาด: ' + err.message));
+      .catch(err => {
+        setSaving('replySubmitBtn', false, '', 'ส่งคำตอบ');
+        showToast('❌ เกิดข้อผิดพลาด: ' + err.message);
+      });
   }
 
   function deleteReplyConfirm(replyId) {
