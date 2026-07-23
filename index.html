@@ -156,10 +156,10 @@
       <!-- มุมมองรายการกระทู้ -->
       <div id="listView">
         <div id="noAdvisorNotice" class="card notice hidden">
-          คุณยังไม่ได้ถูกกำหนดอาจารย์ที่ปรึกษา<br>กรุณาติดต่อเจ้าหน้าที่เพื่อกำหนดก่อนตั้งกระทู้
+          คุณยังไม่ได้ถูกกำหนดอาจารย์ที่ปรึกษา<br>กรุณาติดต่อเจ้าหน้าที่เพื่อตั้งค่าข้อมูล
         </div>
-        <button id="newThreadBtn" class="new-thread-btn hidden" onclick="showFormView()">➕ ตั้งกระทู้ใหม่</button>
-        <div id="threadListEmpty" class="card notice hidden">ยังไม่มีกระทู้</div>
+        <button id="newThreadBtn" class="new-thread-btn hidden" onclick="showFormView()">สร้างคำถาม</button>
+        <div id="threadListEmpty" class="card notice hidden">ยังไม่มีคำถาม</div>
         <div id="threadList" class="thread-list"></div>
       </div>
 
@@ -186,8 +186,8 @@
           <div class="thread-detail-date" id="detailDate"></div>
           <div class="thread-detail-msg" id="detailMessage"></div>
           <div class="owner-actions hidden" id="threadOwnerActions">
-            <button class="btn-xs btn-xs-edit" onclick="editCurrentThread()">✏️ แก้ไขกระทู้</button>
-            <button class="btn-xs btn-xs-delete" onclick="deleteCurrentThread()">🗑️ ลบกระทู้</button>
+            <button class="btn-xs btn-xs-edit" onclick="editCurrentThread()">แก้ไข</button>
+            <button class="btn-xs btn-xs-delete" onclick="deleteCurrentThread()">ลบ</button>
           </div>
 
           <div class="reply-section">
@@ -204,7 +204,7 @@
               <button class="btn btn-primary" onclick="submitReply()">ส่งคำตอบ</button>
             </div>
           </div>
-          <button id="replyAddBtn" class="new-thread-btn hidden" onclick="openReplyForm()">➕ ตอบกระทู้นี้</button>
+          <button id="replyAddBtn" class="new-thread-btn hidden" onclick="openReplyForm()">ตอบคำถาม</button>
         </div>
       </div>
 
@@ -313,14 +313,14 @@
     myAdvisorName = who.advisorName;
 
     if (myRole === 'นักศึกษา') {
-      document.getElementById('roleBadge').innerText = '🎓 ' + myFullName + ' (นักศึกษา)';
+      document.getElementById('roleBadge').innerText = myFullName + ' (นักศึกษา)';
       if (!myAdvisorLineUserId) {
         document.getElementById('noAdvisorNotice').classList.remove('hidden');
       } else {
         document.getElementById('newThreadBtn').classList.remove('hidden');
       }
     } else if (myRole === 'อาจารย์') {
-      document.getElementById('roleBadge').innerText = '👨‍🏫 ' + myFullName + ' (อาจารย์ที่ปรึกษา)';
+      document.getElementById('roleBadge').innerText = myFullName + ' (อาจารย์ที่ปรึกษา)';
     } else {
       document.getElementById('roleBadge').innerText = myFullName;
       document.getElementById('listView').innerHTML =
@@ -338,7 +338,7 @@
         allThreads = res.items;
         renderThreadList();
       })
-      .catch(err => showToast('❌ โหลดกระทู้ไม่สำเร็จ: ' + err.message));
+      .catch(err => showToast('❌ โหลดคำตอบไม่สำเร็จ: ' + err.message));
   }
 
   function renderThreadList() {
@@ -355,7 +355,7 @@
       return '<div class="thread-card" onclick="openThread(\'' + t.threadId + '\')">' +
         '<div class="thread-title">' + escapeHtml(t.title) + '</div>' +
         '<div class="thread-snippet">' + escapeHtml(t.message) + '</div>' +
-        '<div class="thread-meta">🗓️ ' + formatDate(t.updatedAt) + ' · กับ ' + escapeHtml(otherParty) + '</div>' +
+        '<div class="thread-meta">' + formatDate(t.updatedAt) + ' · กับ ' + escapeHtml(otherParty) + '</div>' +
         '</div>';
     }).join('');
   }
@@ -404,7 +404,7 @@
       .then(res => res.json())
       .then(res => {
         if (res.status === 'error') { showToast('❌ ' + res.message); return; }
-        showToast('✅ บันทึกกระทู้เรียบร้อย');
+        showToast('✅ บันทึกคำถามเรียบร้อย');
         showListView();
       })
       .catch(err => showToast('❌ เกิดข้อผิดพลาด: ' + err.message));
@@ -422,12 +422,12 @@
         document.getElementById('listView').classList.add('hidden');
         document.getElementById('detailView').classList.remove('hidden');
       })
-      .catch(err => showToast('❌ โหลดกระทู้ไม่สำเร็จ: ' + err.message));
+      .catch(err => showToast('❌ โหลดคำถามไม่สำเร็จ: ' + err.message));
   }
 
   function renderThreadDetail() {
     document.getElementById('detailTitle').innerText = currentThread.title;
-    document.getElementById('detailDate').innerText = '🗓️ ตั้งเมื่อ ' + formatDate(currentThread.createdAt) +
+    document.getElementById('detailDate').innerText = 'ตั้งเมื่อ ' + formatDate(currentThread.createdAt) +
       (currentThread.updatedAt !== currentThread.createdAt ? ' (แก้ไขล่าสุด ' + formatDate(currentThread.updatedAt) + ')' : '');
     document.getElementById('detailMessage').innerText = currentThread.message;
 
@@ -444,13 +444,13 @@
       replyListEl.innerHTML = currentReplies.map(r => {
         const isAuthor = myRole === 'อาจารย์' && r.advisorLineUserId === userProfile.userId;
         return '<div class="reply-card">' +
-          '<span class="reply-author">👨‍🏫 ' + escapeHtml(r.advisorName) + '</span>' +
+          '<span class="reply-author">' + escapeHtml(r.advisorName) + '</span>' +
           '<span class="reply-date">' + formatDate(r.createdAt) + '</span>' +
           '<div class="reply-msg">' + escapeHtml(r.message) + '</div>' +
           (isAuthor ?
             '<div class="reply-actions">' +
-              '<button class="btn-xs btn-xs-edit" onclick="editReplyPrompt(\'' + r.replyId + '\')">✏️ แก้ไข</button>' +
-              '<button class="btn-xs btn-xs-delete" onclick="deleteReplyConfirm(\'' + r.replyId + '\')">🗑️ ลบ</button>' +
+              '<button class="btn-xs btn-xs-edit" onclick="editReplyPrompt(\'' + r.replyId + '\')">แก้ไข</button>' +
+              '<button class="btn-xs btn-xs-delete" onclick="deleteReplyConfirm(\'' + r.replyId + '\')">ลบ</button>' +
             '</div>' : '') +
           '</div>';
       }).join('');
@@ -471,7 +471,7 @@
   }
 
   function deleteCurrentThread() {
-    if (!confirm('ต้องการลบกระทู้นี้ใช่หรือไม่? คำตอบทั้งหมดจะถูกลบไปด้วย')) return;
+    if (!confirm('ต้องการลบคำถามนี้ใช่หรือไม่? คำตอบทั้งหมดจะถูกลบไปด้วย')) return;
     fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -480,7 +480,7 @@
       .then(res => res.json())
       .then(res => {
         if (res.status === 'error') { showToast('❌ ' + res.message); return; }
-        showToast('✅ ลบกระทู้เรียบร้อย');
+        showToast('✅ ลบคำถามเรียบร้อย');
         showListView();
       })
       .catch(err => showToast('❌ เกิดข้อผิดพลาด: ' + err.message));
